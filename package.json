@@ -1,7 +1,23 @@
 {
   "name": "rideshare",
   "version": "0.1.0",
-  "private": true,
+  "description": "Full-stack ride-sharing platform built with Next.js, SQLite, and an advanced fare calculation engine.",
+  "author": "Vivek Chavan <vivekchavan3552@gmail.com>",
+  "license": "MIT",
+  "keywords": [
+    "rideshare",
+    "nextjs",
+    "react",
+    "sqlite",
+    "full-stack",
+    "render",
+    "fare-engine"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vckshood/rideshare.git"
+  },
+  "private": false,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
