@@ -25,8 +25,19 @@ export function AuthProvider({ children }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
+
+    let data;
+    try {
+      data = await res.json();
+    } catch {
+      throw new Error(
+        res.status === 502 || res.status === 504
+          ? 'The server is currently waking up on Render. Please wait ~30 seconds and try again.'
+          : `Server communication error (${res.status} ${res.statusText || 'Internal Error'}). Please check server logs.`
+      );
+    }
+
+    if (!res.ok) throw new Error(data.error || 'Login failed');
     
     setUser(data.user);
     setToken(data.token);
@@ -41,8 +52,19 @@ export function AuthProvider({ children }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password, phone, role }),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
+
+    let data;
+    try {
+      data = await res.json();
+    } catch {
+      throw new Error(
+        res.status === 502 || res.status === 504
+          ? 'The server is currently waking up on Render. Please wait ~30 seconds and try again.'
+          : `Server communication error (${res.status} ${res.statusText || 'Internal Error'}). Please check server logs.`
+      );
+    }
+
+    if (!res.ok) throw new Error(data.error || 'Registration failed');
     
     setUser(data.user);
     setToken(data.token);

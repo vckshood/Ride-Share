@@ -268,7 +268,7 @@ This repository includes a native [`render.yaml`](render.yaml) blueprint for aut
    - **Start Command**: `npm start`
    - **Plan**: `Free`
 4. Set Environment Variables:
-   - `NODE_VERSION` = `20.18.0`
+   - `NODE_VERSION` = `22.14.0` (or 20+)
    - `JWT_SECRET` = *(Generate random 32-byte secret)*
    - `NEXT_TELEMETRY_DISABLED` = `1`
 

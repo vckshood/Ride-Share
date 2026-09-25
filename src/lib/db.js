@@ -1,6 +1,8 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
+import bcrypt from 'bcryptjs';
+import { v4 as uuidv4 } from 'uuid';
 
 const DB_PATH = process.env.DATABASE_PATH || path.join(process.cwd(), 'rideshare.db');
 
@@ -8,16 +10,21 @@ let db;
 
 export function getDb() {
   if (!db) {
-    db = new Database(DB_PATH);
-    db.pragma('journal_mode = WAL');
-    db.pragma('foreign_keys = ON');
-    initializeDatabase();
+    const dbDir = path.dirname(DB_PATH);
+    if (!fs.existsSync(dbDir)) {
+      fs.mkdirSync(dbDir, { recursive: true });
+    }
+    const instance = new Database(DB_PATH);
+    instance.pragma('journal_mode = WAL');
+    instance.pragma('foreign_keys = ON');
+    initializeDatabase(instance);
+    db = instance;
   }
   return db;
 }
 
-function initializeDatabase() {
-  db.exec(`
+function initializeDatabase(targetDb) {
+  targetDb.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
@@ -100,16 +107,13 @@ function initializeDatabase() {
   `);
 
   // Seed demo data if empty
-  const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
+  const userCount = targetDb.prepare('SELECT COUNT(*) as count FROM users').get();
   if (userCount.count === 0) {
-    seedDemoData();
+    seedDemoData(targetDb);
   }
 }
 
-function seedDemoData() {
-  const bcrypt = require('bcryptjs');
-  const { v4: uuidv4 } = require('uuid');
-
+function seedDemoData(targetDb) {
   // Create demo users
   const demoUsers = [
     { id: uuidv4(), name: 'Vivek Sharma', email: 'vivek@rideshare.com', password: bcrypt.hashSync('password123', 10), phone: '+91-9876543210', role: 'rider' },
@@ -119,21 +123,21 @@ function seedDemoData() {
     { id: uuidv4(), name: 'Admin User', email: 'admin@rideshare.com', password: bcrypt.hashSync('admin123', 10), phone: '+91-9000000000', role: 'admin' },
   ];
 
-  const insertUser = db.prepare(`
+  const insertUser = targetDb.prepare(`
     INSERT INTO users (id, name, email, password, phone, role) VALUES (?, ?, ?, ?, ?, ?)
   `);
 
-  const insertDriver = db.prepare(`
+  const insertDriver = targetDb.prepare(`
     INSERT INTO drivers (id, user_id, vehicle_type, vehicle_number, vehicle_model, license_number, current_lat, current_lng, rating, total_rides, total_earnings)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
-  const insertRide = db.prepare(`
+  const insertRide = targetDb.prepare(`
     INSERT INTO rides (id, rider_id, driver_id, vehicle_type, pickup_address, dropoff_address, pickup_lat, pickup_lng, dropoff_lat, dropoff_lng, distance, duration_minutes, fare, status, payment_status, created_at, completed_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
-  const transaction = db.transaction(() => {
+  const transaction = targetDb.transaction(() => {
     for (const u of demoUsers) {
       insertUser.run(u.id, u.name, u.email, u.password, u.phone, u.role);
     }

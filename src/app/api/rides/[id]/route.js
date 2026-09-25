@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { getUserFromRequest } from '@/lib/auth';
+import { v4 as uuidv4 } from 'uuid';
 
 // PATCH /api/rides/[id] - update ride status
 export async function PATCH(request, { params }) {
@@ -65,7 +66,6 @@ export async function PATCH(request, { params }) {
           return NextResponse.json({ error: 'Rating must be between 1 and 5' }, { status: 400 });
         }
 
-        const { v4: uuidv4 } = require('uuid');
         const targetUserId = ride.driver_id
           ? db.prepare('SELECT user_id FROM drivers WHERE id = ?').get(ride.driver_id)?.user_id
           : null;
